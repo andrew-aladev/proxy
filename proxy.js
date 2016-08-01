@@ -39,8 +39,28 @@ module.exports = setup;
 
 function setup (server, options) {
   if (!server) server = http.createServer();
-  server.on('request', onrequest);
-  server.on('connect', onconnect);
+  server.on('request', function () {
+    var self = this;
+    var args = arguments;
+    if (options && options.request_handler) {
+      options.request_handler(function () {
+        onrequest.apply(self, args);
+      });
+    } else {
+      onrequest.apply(self, args);
+    }
+  })
+  .on('connect', function () {
+    var self = this;
+    var args = arguments;
+    if (options && options.connect_handler) {
+      options.connect_handler(function () {
+        onconnect.apply(self, args);
+      });
+    } else {
+      onconnect.apply(self, args);
+    }
+  });
   return server;
 }
 
